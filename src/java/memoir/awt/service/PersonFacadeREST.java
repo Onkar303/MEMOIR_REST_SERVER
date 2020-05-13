@@ -22,6 +22,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import memoir.awt.Credentials;
 import memoir.awt.Person;
 
 /**
@@ -163,6 +164,19 @@ public class PersonFacadeREST extends AbstractFacade<Person> {
         q.setParameter("surname", surname);
         q.setParameter("gender",gender);
         return q.getResultList();
+    }
+    
+    //signup form 
+    @POST
+    @Path("addNewUser/{name}/{surname}/{gender}/{DOB}/{address}/{state}/{postcode}")
+    @Produces({"application/json"})
+    public Object addNewUser(@PathParam("name")String name,@PathParam("surname")String surname,@PathParam("gender")String gender,@PathParam("address")String address,@PathParam("state")String state,@PathParam("postcode")String postcode)
+    {
+       
+        TypedQuery<Credentials> credentials = em.createQuery("",Credentials.class);
+        TypedQuery<Person> person = em.createQuery("",Person.class);
+        
+        return null;
     }
     
     

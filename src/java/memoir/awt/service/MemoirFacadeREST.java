@@ -344,7 +344,7 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
     @Produces({"application/json"})
     public Object findTOpFiveMoviesById(@PathParam("personId") Integer personId) {
         List<Object[]> q = em.createQuery("select m.movieName,m.movieReleaseDate,m.movieRating.star from Memoir as m where m.personId.personId = '" + personId + "' and extract(year from current_date) = extract (year from m.movieReleaseDate) order by m.movieRating.star desc", Object[].class).setMaxResults(5).getResultList();
-
+        
         JsonArrayBuilder builder = Json.createArrayBuilder();
 
         for (Object[] row : q) {

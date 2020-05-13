@@ -132,14 +132,14 @@ public class CredentialsFacadeREST extends AbstractFacade<Credentials> {
     }
     
     
+    //sign-in api
+    
     @GET
     @Path("Credentials.userExists/{username}/{password}")
     @Produces({"application/json"})
     public Object userExists(@PathParam("username")String username,@PathParam("password")String password)
     {
-        TypedQuery<Credentials> q = em.createQuery("select c from Credentials c where c.username = :username and c.password = :password",Credentials.class);
-        q.setParameter("username",username);
-        q.setParameter("password",password);
+        TypedQuery<Credentials> q = em.createQuery("select c from Credentials c where c.username = '" + username + "' and c.password = '" + password +"'",Credentials.class);
         boolean userExists = false;
         if(q.getResultList().size()>0)
             userExists = true;
@@ -152,11 +152,11 @@ public class CredentialsFacadeREST extends AbstractFacade<Credentials> {
         return builder.build();
     }
     
+   
     
  
 
     
-   
     @Override
     protected EntityManager getEntityManager() {
         return em;
