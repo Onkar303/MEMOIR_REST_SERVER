@@ -8,7 +8,7 @@ import memoir.awt.Cinema;
 import memoir.awt.Person;
 import memoir.awt.Rating;
 
-@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2020-04-22T16:00:34")
+@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2020-05-14T18:38:50")
 @StaticMetamodel(Memoir.class)
 public class Memoir_ { 
 

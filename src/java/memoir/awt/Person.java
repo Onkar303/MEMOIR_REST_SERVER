@@ -71,6 +71,19 @@ public class Person implements Serializable {
     public Person() {
     }
 
+    public Person(Integer personId, String name, String surname, String gender, Date dob, String address, Credentials credentialsId, Collection<Memoir> memoirCollection) {
+        this.personId = personId;
+        this.name = name;
+        this.surname = surname;
+        this.gender = gender;
+        this.dob = dob;
+        this.address = address;
+        this.credentialsId = credentialsId;
+        this.memoirCollection = memoirCollection;
+    }
+    
+    
+
     public Person(Integer personId) {
         this.personId = personId;
     }

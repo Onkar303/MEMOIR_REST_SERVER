@@ -59,6 +59,15 @@ public class Credentials implements Serializable {
     public Credentials() {
     }
 
+    public Credentials(Integer credentialsId, String username, String password, Date signupdate, Collection<Person> personCollection) {
+        this.credentialsId = credentialsId;
+        this.username = username;
+        this.password = password;
+        this.signupdate = signupdate;
+        this.personCollection = personCollection;
+    }
+    
+   
     public Credentials(Integer credentialsId) {
         this.credentialsId = credentialsId;
     }

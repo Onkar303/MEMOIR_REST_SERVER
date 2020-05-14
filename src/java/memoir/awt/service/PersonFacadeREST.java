@@ -166,16 +166,22 @@ public class PersonFacadeREST extends AbstractFacade<Person> {
         return q.getResultList();
     }
     
-    //signup form 
+    //signup api
     @POST
-    @Path("addNewUser/{name}/{surname}/{gender}/{DOB}/{address}/{state}/{postcode}")
+    @Path("addNewUser/{name}/{surname}/{gender}/{DOB}/{address}/{state}/{postcode}/{username}/{password}")
     @Produces({"application/json"})
-    public Object addNewUser(@PathParam("name")String name,@PathParam("surname")String surname,@PathParam("gender")String gender,@PathParam("address")String address,@PathParam("state")String state,@PathParam("postcode")String postcode)
+    public Object addNewUser(@PathParam("name")String name,@PathParam("surname")String surname,@PathParam("gender")String gender,@PathParam("address")String address,@PathParam("state")String state,@PathParam("postcode")String postcode,@PathParam("DOB")String DOB,@PathParam("username")String username,@PathParam("password")String password)
     {
        
-        TypedQuery<Credentials> credentials = em.createQuery("",Credentials.class);
-        TypedQuery<Person> person = em.createQuery("",Person.class);
+        TypedQuery<Credentials> credentialsquery = em.createQuery("select c from Credentials c",Credentials.class);
+        Date date = new SimpleDateFormat("dd-MM-yyyy").parse(DOB);
+        Credentials credentials = new Credentials(credentialsquery.getResultList().size()+1,username,password,date,null);
+       
         
+        TypedQuery<Person> personquery = em.createQuery("select p from Person",Person.class);
+        Person person = new Person(1,name,surname,gender,DOB,address,credentials,null);
+      
+      
         return null;
     }
     
