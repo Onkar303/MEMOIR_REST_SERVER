@@ -5,6 +5,7 @@
  */
 package memoir.awt.service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -91,75 +92,66 @@ public class CredentialsFacadeREST extends AbstractFacade<Credentials> {
     public String countREST() {
         return String.valueOf(super.count());
     }
-    
+
     //static methods
-    
     @GET
     @Path("Credentials.findByUserName/{username}")
     @Produces({"application/json"})
-    public List<Credentials> findByUserName(@PathParam("username")String username)
-    {
+    public List<Credentials> findByUserName(@PathParam("username") String username) {
         Query q = em.createNamedQuery("Credentials.findByUsername");
-        q.setParameter("username",username);
+        q.setParameter("username", username);
         return q.getResultList();
     }
-    
+
     @GET
     @Path("Credentials.findByPassword/{password}")
     @Produces({"application/json"})
-    public List<Credentials> findByPassword(@PathParam("password")String password)
-    {
+    public List<Credentials> findByPassword(@PathParam("password") String password) {
         Query q = em.createNamedQuery("Credentials.findByPassword");
-        q.setParameter("password",password);
+        q.setParameter("password", password);
         return q.getResultList();
     }
-    
-    
+
     @GET
     @Path("Credentials.findBySignupdate/{signupdate}")
     @Produces({"application/json"})
-    public List<Credentials> findBySignupdate(@PathParam("signupdate")String signupdate)
-    {
+    public List<Credentials> findBySignupdate(@PathParam("signupdate") String signupdate) {
         Query q = em.createNamedQuery("Credentials.findBySignupdate");
-        try{
+        try {
             Date date = new SimpleDateFormat("dd-MM-yyyy").parse(signupdate);
-            q.setParameter("signupdate",date);
-            
-        }catch(Exception e){
+            q.setParameter("signupdate", date);
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return q.getResultList();
     }
-    
-    
+
     //sign-in api
     @GET
     @Path("Credentials.userExists/{username}/{password}")
     @Produces({"application/json"})
-    public Object userExists(@PathParam("username")String username,@PathParam("password")String password)
-    {
-        TypedQuery<Credentials> q = em.createQuery("select c from Credentials c where c.username = '" + username + "' and c.password = '" + password +"'",Credentials.class);
-        
+    public Object userExists(@PathParam("username") String username, @PathParam("password") String password) {
+        List<Credentials> q = em.createQuery("select c from Credentials c where c.username = '" + username + "' and c.password = '" + password + "'", Credentials.class).getResultList();
+
         boolean userExists = false;
-        if(q.getResultList().size()>0)
+        if (q.size() > 0) {
             userExists = true;
-            
-      
+        }
+
         JsonObject jsonObject = Json.createObjectBuilder()
-                                    .add("userExists",userExists)
-                                    .build();
-        
+                .add("userExists", userExists)
+                .add("userId", q.get(0).getCredentialsId())
+                .add("userName",q.get(0).getUsername())
+                .add("userPassword",q.get(0).getPassword())
+                .build();
+
         return jsonObject;
     }
-    
-   
-    
- 
 
-    
     @Override
     protected EntityManager getEntityManager() {
         return em;
     }
-    
+
 }

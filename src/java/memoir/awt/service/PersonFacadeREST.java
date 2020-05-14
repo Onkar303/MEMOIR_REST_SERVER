@@ -5,8 +5,10 @@
  */
 package memoir.awt.service;
 
+import java.text.DateFormat;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -87,109 +89,98 @@ public class PersonFacadeREST extends AbstractFacade<Person> {
     public String countREST() {
         return String.valueOf(super.count());
     }
-    
+
     //Named Queries
     @GET
     @Path("Person.findByName/{name}")
     @Produces({"application/json"})
-    public List<Person> findByName(@PathParam("name")String name)
-    {
+    public List<Person> findByName(@PathParam("name") String name) {
         Query query = em.createNamedQuery("Person.findByName");
         query.setParameter("name", name);
         return query.getResultList();
     }
-    
-    
+
     @GET
     @Path("Person.findBySurname/{surname}")
     @Produces({"application/json"})
-    public List<Person> findBySurname(@PathParam("surname")String surname)
-    {
+    public List<Person> findBySurname(@PathParam("surname") String surname) {
         Query query = em.createNamedQuery("Person.findBySurname");
-        query.setParameter("surname",surname);
+        query.setParameter("surname", surname);
         return query.getResultList();
     }
-    
-    
+
     @GET
     @Path("Person.findByGender/{gender}")
     @Produces({"application/json"})
-    public List<Person> findByGender(@PathParam("gender")String gender)
-    {
+    public List<Person> findByGender(@PathParam("gender") String gender) {
         Query query = em.createNamedQuery("Person.findByGender");
-        query.setParameter("gender",gender);
+        query.setParameter("gender", gender);
         return query.getResultList();
     }
-    
-    
+
     @GET
     @Path("Person.findByDob/{dob}")
     @Produces({"application/json"})
-    public List<Person> findByDob(@PathParam("dob")String dob)
-    {
+    public List<Person> findByDob(@PathParam("dob") String dob) {
         Query query = em.createNamedQuery("Person.findByDob");
-        try
-        {    Date date = new SimpleDateFormat("dd-MM-yyyy").parse(dob);
-             query.setParameter("dob",date);
-        }catch(Exception e)
-        {
-             e.printStackTrace();
+        try {
+            Date date = new SimpleDateFormat("dd-MM-yyyy").parse(dob);
+            query.setParameter("dob", date);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-       
+
         return query.getResultList();
     }
-    
-    
+
     @GET
     @Path("Person.findByAddress/{address}")
     @Produces({"application/json"})
-    public List<Person> findByAddress(@PathParam("address")String address)
-    {
+    public List<Person> findByAddress(@PathParam("address") String address) {
         Query query = em.createNamedQuery("Person.findByAddress");
-        query.setParameter("address",address);
+        query.setParameter("address", address);
         return query.getResultList();
     }
-    
-    
-    
+
     //dynamic task3 part b
-    
     @GET
     @Path("findByThreeAttrsDyn/{name}/{surname}/{gender}")
     @Produces({"application/json"})
-    public List<Person> findByThreeAttrsDyn(@PathParam("name")String name,@PathParam("surname")String surname,@PathParam("gender")String gender)
-    {
-        TypedQuery<Person> q = em.createQuery("select p from Person p where p.name = :name and p.surname=:surname and p.gender=:gender",Person.class);
+    public List<Person> findByThreeAttrsDyn(@PathParam("name") String name, @PathParam("surname") String surname, @PathParam("gender") String gender) {
+        TypedQuery<Person> q = em.createQuery("select p from Person p where p.name = :name and p.surname=:surname and p.gender=:gender", Person.class);
         q.setParameter("name", name);
         q.setParameter("surname", surname);
-        q.setParameter("gender",gender);
+        q.setParameter("gender", gender);
         return q.getResultList();
     }
-    
+
     //signup api
-    @POST
-    @Path("addNewUser/{name}/{surname}/{gender}/{DOB}/{address}/{state}/{postcode}/{username}/{password}")
+    @GET
+    @Path("addNewUser/{name}/{surname}/{gender}/{DOB}/{address}/{postcode}/{state}/{username}/{password}")
     @Produces({"application/json"})
-    public Object addNewUser(@PathParam("name")String name,@PathParam("surname")String surname,@PathParam("gender")String gender,@PathParam("address")String address,@PathParam("state")String state,@PathParam("postcode")String postcode,@PathParam("DOB")String DOB,@PathParam("username")String username,@PathParam("password")String password)
-    {
-       
-        TypedQuery<Credentials> credentialsquery = em.createQuery("select c from Credentials c",Credentials.class);
-        Date date = new SimpleDateFormat("dd-MM-yyyy").parse(DOB);
-        Credentials credentials = new Credentials(credentialsquery.getResultList().size()+1,username,password,date,null);
-       
-        
-        TypedQuery<Person> personquery = em.createQuery("select p from Person",Person.class);
-        Person person = new Person(1,name,surname,gender,DOB,address,credentials,null);
-      
-      
+    public Object addNewUser(@PathParam("name") String name, @PathParam("surname") String surname, @PathParam("gender") String gender,@PathParam("postcode")String postcode, @PathParam("address") String address, @PathParam("state") String state, @PathParam("DOB") String DOB, @PathParam("username") String username, @PathParam("password") String password) {
+
+        DateFormat dateformat = new SimpleDateFormat("dd-MM-yyyy");
+        Date currentdate = new Date();
+
+        TypedQuery<Credentials> credentialsquery = em.createQuery("select c from Credentials c", Credentials.class);
+        Credentials credentials = new Credentials(credentialsquery.getResultList().size() + 1, username, password, currentdate, null);
+
+        TypedQuery<Person> personquery = em.createQuery("select p from Person", Person.class);
+        Person person = null;
+        try {
+            person = new Person((personquery.getResultList().size() + 1), name, surname, gender, new SimpleDateFormat("dd-mm-yyyy").parse(DOB), address, credentials, null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
-    
-    
 
     @Override
     protected EntityManager getEntityManager() {
         return em;
     }
-    
+
 }
