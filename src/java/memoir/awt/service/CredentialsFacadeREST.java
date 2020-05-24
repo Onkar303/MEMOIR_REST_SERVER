@@ -139,12 +139,22 @@ public class CredentialsFacadeREST extends AbstractFacade<Credentials> {
             userExists = true;
         }
 
-        JsonObject jsonObject = Json.createObjectBuilder()
-                .add("userExists", userExists)
-                .add("userId", q.get(0).getCredentialsId())
-                .add("userName",q.get(0).getUsername())
-                .add("userPassword",q.get(0).getPassword())
-                .build();
+        JsonObject jsonObject = null;
+        if (userExists) {
+            jsonObject = Json.createObjectBuilder()
+                    .add("userExists", userExists)
+                    .add("userId", q.get(0).getCredentialsId())
+                    .add("userName", q.get(0).getUsername())
+                    .add("userPassword", q.get(0).getPassword())
+                    .build();
+        } else {
+            jsonObject = Json.createObjectBuilder()
+                    .add("userExists", userExists)
+                    .add("userId", "0")
+                    .add("userName", "no user")
+                    .add("userPassword", "no password")
+                    .build();
+        }
 
         return jsonObject;
     }

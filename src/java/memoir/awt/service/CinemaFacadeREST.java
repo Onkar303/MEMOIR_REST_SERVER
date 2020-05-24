@@ -5,8 +5,12 @@
  */
 package memoir.awt.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import javax.ejb.Stateless;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -110,7 +114,32 @@ public class CinemaFacadeREST extends AbstractFacade<Cinema> {
     
    
     
-    
+    @GET
+    @Path("getAllCinemas")
+    @Produces({"application/json"})
+    public Object getAllCinemas(){
+        
+        List<Cinema> q = em.createQuery("select c from Cinema c",Cinema.class).getResultList();
+        
+        JsonArrayBuilder builder = Json.createArrayBuilder();
+        for(Cinema row : q)
+        {
+            JsonObject jsonObject = Json.createObjectBuilder()
+                    .add("cinemaId", row.getCinemaId().toString())
+                    .add("cinemaName",row.getCinemaName().toString())
+                    .add("cinemaLocation",row.getLocation().toString())
+                    .build();
+           builder.add(jsonObject);
+        }
+        
+        
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add("cinemas",builder.build())
+                .build();
+        
+        
+        return jsonObject;
+    }
     
 //    //task 3 d static query
 //    @GET

@@ -12,11 +12,14 @@ import java.util.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -190,21 +193,30 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
 
     //tak 4 part a
     @GET
-    @Path("findTotalCountForEachCinema/{personId}/{fromDate},{toDate}")
+    @Path("findTotalCountForEachCinemaNew/{personId}/{fromDate}/{toDate}")
     @Produces({"application/json"})
-    public Object findTotalCountForEachCinema(@PathParam("personId") Integer personId, @PathParam("fromDate") Date fromDate, @PathParam("toDate") Date toDate) {
+    public Object findTotalCountForEachCinemaNew(@PathParam("personId") Integer personId, @PathParam("fromDate") String fromDate, @PathParam("toDate") String toDate) {
 
         List<Postcode> list = initAndAddPostcode();
+        Date fromDateConv = null;
+        Date toDateConv = null;
+        try {
+            fromDateConv = new SimpleDateFormat("yyyy-mm-dd").parse(fromDate);
+            toDateConv = new SimpleDateFormat("yyyy-mm-dd").parse(toDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        List<Object[]> q = em.createQuery("select substring(m.cinemaId.location,length(m.cinemaId.location)-3), count(m) from Memoir as m where m.personId.personId = '" + personId + "' and m.movieWatchDate between '" + fromDate + "' and '" + toDate + "' group by substring(m.cinemaId.location,length(m.cinemaId.location)-3)", Object[].class).getResultList();
+        List<Object[]> q = em.createQuery("select substring(m.cinemaId.location,length(m.cinemaId.location)-3), count(m) from Memoir as m where m.personId.personId = '" + personId + "' and m.movieWatchDate between '" + fromDate + "' and '" + toDate+ "' group by substring(m.cinemaId.location,length(m.cinemaId.location)-3)", Object[].class).getResultList();
         //List<Object[]> q = em.createQuery("select substring(m.cinemaId.location,length(m.cinemaId.location)-3) from Memoir as m where m.personId.personId = '" + personId + "' and m.movieWatchDate between '" + fromDate + "' and '" + toDate + "'", Object[].class).getResultList();
 
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-
-        for (Postcode pObj : list) {
-            for (Object[] row : q) {
-                if (pObj.getPostcode() == Integer.parseInt(row[0].toString())) {
-                    pObj.setCount(Integer.parseInt(row[1].toString()));
+        if (q.size() > 0) {
+            for (Postcode pObj : list) {
+                for (Object[] row : q) {
+                    if (pObj.getPostcode() == Integer.parseInt(row[0].toString())) {
+                        pObj.setCount(Integer.parseInt(row[1].toString()));
+                    }
                 }
             }
         }
@@ -219,8 +231,11 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
         }
 
         JsonArray array = arrayBuilder.build();
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add("listOfCinemas", array)
+                .build();
 
-        return array;
+        return jsonObject;
 
     }
 
@@ -294,11 +309,11 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
 
         //  List<Object[]> q = em.createQuery("select m.movieName, extract(year from m.movieReleaseDate ) from Memoir as m where m.personId.personId = '" + personId + "' ",Object[].class).getResultList();
         JsonArrayBuilder builder = Json.createArrayBuilder();
-
+   
         for (Object[] row : q) {
             JsonObject obj = Json.createObjectBuilder()
                     .add("movieNames", row[0].toString())
-                    .add("releaseYear", row[1].toString())
+                    .add("releaseYear",row[1].toString())
                     .build();
 
             builder.add(obj);
@@ -339,7 +354,7 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
         for (Object[] row : q) {
             JsonObject obj = Json.createObjectBuilder()
                     .add("movieName", row[0].toString())
-                    .add("movieReleaseDate", row[1].toString())
+                    .add("movieReleaseDate", getDate(row[1].toString()))
                     .add("movieStarRating", row[2].toString())
                     .build();
 
@@ -363,8 +378,8 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
 
             JsonObject object = Json.createObjectBuilder()
                     .add("movieName", row[0].toString())
-                    .add("movieReleaseDate", row[1].toString())
-                    .add("movieWatchDate", row[2].toString())
+                    .add("movieReleaseDate", getDate(row[1].toString()))
+                    .add("movieWatchDate", getDate(row[2].toString()))
                     .add("cinemaName", row[3].toString())
                     .add("cinemaLocation", row[4].toString())
                     .add("movieComment", row[5].toString())
@@ -412,6 +427,22 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
         }
 
         return list;
+    }
+    
+    public String getDate(String date_s)
+    {
+        SimpleDateFormat dt = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy",Locale.US);
+        Date date = null;
+        try {
+            date = dt.parse(date_s);
+        } catch (ParseException ex) {
+            Logger.getLogger(MemoirFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        // *** same for the format String below
+        SimpleDateFormat dt1 = new SimpleDateFormat("yyyy-MM-dd");
+        String dates  = dt1.format(date);
+        return dates;
     }
 
 }
