@@ -11,6 +11,10 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.List;
 import javax.ejb.Stateless;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -155,10 +159,11 @@ public class PersonFacadeREST extends AbstractFacade<Person> {
     }
 
     //signup api
-    @GET
+    @POST
+    @Consumes("text/plain")
     @Path("addNewUser/{name}/{surname}/{gender}/{DOB}/{address}/{postcode}/{state}/{username}/{password}")
     @Produces({"application/json"})
-    public Object addNewUser(@PathParam("name") String name, @PathParam("surname") String surname, @PathParam("gender") String gender,@PathParam("postcode")String postcode, @PathParam("address") String address, @PathParam("state") String state, @PathParam("DOB") String DOB, @PathParam("username") String username, @PathParam("password") String password) {
+    public Object addNewUser(@PathParam("name") String name, @PathParam("surname") String surname, @PathParam("gender") String gender, @PathParam("postcode") String postcode, @PathParam("address") String address, @PathParam("state") String state, @PathParam("DOB") String DOB, @PathParam("username") String username, @PathParam("password") String password) {
 
         DateFormat dateformat = new SimpleDateFormat("dd-MM-yyyy");
         Date currentdate = new Date();
@@ -166,7 +171,7 @@ public class PersonFacadeREST extends AbstractFacade<Person> {
         TypedQuery<Credentials> credentialsquery = em.createQuery("select c from Credentials c", Credentials.class);
         Credentials credentials = new Credentials(credentialsquery.getResultList().size() + 1, username, password, currentdate, null);
 
-        TypedQuery<Person> personquery = em.createQuery("select p from Person", Person.class);
+        TypedQuery<Person> personquery = em.createQuery("select p from Person p", Person.class);
         Person person = null;
         try {
             person = new Person((personquery.getResultList().size() + 1), name, surname, gender, new SimpleDateFormat("dd-mm-yyyy").parse(DOB), address, credentials, null);
@@ -176,6 +181,33 @@ public class PersonFacadeREST extends AbstractFacade<Person> {
         }
 
         return null;
+    }
+
+    @GET
+    @Path("getPersonByCredentialId/{credentialsId}")
+    @Produces({"application/json"})
+    public Object getPersonByCredentialId(@PathParam("credentialsId") Integer credentailsId) {
+        List<Person> q = em.createQuery("select p from Person p where p.personId = '" + credentailsId + "'", Person.class).getResultList();
+
+        JsonArrayBuilder builder = Json.createArrayBuilder();
+
+        for (Person person : q) {
+            JsonObject object = Json.createObjectBuilder()
+                    .add("id", person.getPersonId())
+                    .add("name", person.getName())
+                    .add("surname", person.getSurname())
+                    .add("gender", person.getGender())
+                    .add("address", person.getAddress())
+                    .build();
+
+            builder.add(object);
+
+        }
+        
+       JsonObject object = Json.createObjectBuilder()
+                    .add("person",builder)
+               .build();
+        return object;
     }
 
     @Override
