@@ -159,6 +159,35 @@ public class CredentialsFacadeREST extends AbstractFacade<Credentials> {
         return jsonObject;
     }
 
+    @POST
+    @Consumes({MediaType.MULTIPART_FORM_DATA})
+    @Path("addCredentials/{username}/{password}")
+    @Produces({"application/json"})
+    public Object addCredentials(@PathParam("username") String username, @PathParam("password") String password) {
+
+        List<Credentials> q = em.createQuery("select c from Credentials c", Credentials.class).getResultList();
+        Credentials credentials = new Credentials();
+        credentials.setCredentialsId(q.size() + 1);
+        credentials.setUsername(username);
+        credentials.setPassword(password);
+        credentials.setSignupdate(new Date());
+
+        JsonObject object = null;
+        if (em.contains(credentials)) {
+            object = Json.createObjectBuilder()
+                    .add("isSuccessfull", false)
+                    .add("message", "user credentials already registered")
+                    .build();
+        } else {
+            em.persist(credentials);
+            object = Json.createObjectBuilder()
+                    .add("isSuccessfull", true)
+                    .add("message", "successfull")
+                    .build();
+        }
+        return object;
+    }
+
     @Override
     protected EntityManager getEntityManager() {
         return em;

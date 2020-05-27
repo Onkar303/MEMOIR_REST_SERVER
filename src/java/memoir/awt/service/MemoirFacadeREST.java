@@ -42,6 +42,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import memoir.awt.Cinema;
 import memoir.awt.Memoir;
+import memoir.awt.Person;
+import memoir.awt.Rating;
 
 /**
  *
@@ -207,7 +209,7 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
             e.printStackTrace();
         }
 
-        List<Object[]> q = em.createQuery("select substring(m.cinemaId.location,length(m.cinemaId.location)-3), count(m) from Memoir as m where m.personId.personId = '" + personId + "' and m.movieWatchDate between '" + fromDate + "' and '" + toDate+ "' group by substring(m.cinemaId.location,length(m.cinemaId.location)-3)", Object[].class).getResultList();
+        List<Object[]> q = em.createQuery("select substring(m.cinemaId.location,length(m.cinemaId.location)-3), count(m) from Memoir as m where m.personId.personId = '" + personId + "' and m.movieWatchDate between '" + fromDate + "' and '" + toDate + "' group by substring(m.cinemaId.location,length(m.cinemaId.location)-3)", Object[].class).getResultList();
         //List<Object[]> q = em.createQuery("select substring(m.cinemaId.location,length(m.cinemaId.location)-3) from Memoir as m where m.personId.personId = '" + personId + "' and m.movieWatchDate between '" + fromDate + "' and '" + toDate + "'", Object[].class).getResultList();
 
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
@@ -309,11 +311,11 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
 
         //  List<Object[]> q = em.createQuery("select m.movieName, extract(year from m.movieReleaseDate ) from Memoir as m where m.personId.personId = '" + personId + "' ",Object[].class).getResultList();
         JsonArrayBuilder builder = Json.createArrayBuilder();
-   
+
         for (Object[] row : q) {
             JsonObject obj = Json.createObjectBuilder()
                     .add("movieNames", row[0].toString())
-                    .add("releaseYear",row[1].toString())
+                    .add("releaseYear", row[1].toString())
                     .build();
 
             builder.add(obj);
@@ -391,6 +393,30 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
         return mainObjectBuilder.add("movies", arrayBuilder.build()).build();
     }
 
+    @POST
+    @Consumes({MediaType.MULTIPART_FORM_DATA})
+    @Path("addMemoir/{memoirId}/{movieName}/{movieReleaseDate}/{movieWatchTime}/{movieWatchDate}/{movieComment}/{movieRating}/{cinemaId}/{personId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Object addMemoir(@PathParam("memoirId")Integer memoirId, @PathParam("movieName") String movieName, @PathParam("movieReleaseDate") String movieReleaseDate, @PathParam("movieWatchTime") String movieWatchTime, @PathParam("movieWatchDate") String movieWatchDate, @PathParam("movieComment") String movieComment, @PathParam("movieRating") String movieRating, @PathParam("cinemaId")Integer cinemaId, @PathParam("personId")Integer personId) {
+       
+        List<Rating> rating = em.createQuery("select r from Rating r where r.star = '" + movieRating + "'",Rating.class).getResultList();
+        
+        List<Person> person = em.createQuery("select p from Person p where p.personId = '" + personId + "'",Person.class).getResultList();
+        
+        List<Cinema> cinema = em.createQuery("select c from Cinema c where c.cinemaId = '" + cinemaId +"'",Cinema.class).getResultList();
+        
+        Memoir memoir = new Memoir(memoirId,movieName,converStringtoDate(movieReleaseDate),converStringtoDate(movieWatchTime),converStringtoDate(movieWatchDate),rating.get(0),movieComment,cinema.get(0),person.get(0));
+        
+        
+        
+        em.persist(memoir);
+   
+        
+        
+        
+        return null;
+    }
+
     @Override
     protected EntityManager getEntityManager() {
         return em;
@@ -428,10 +454,9 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
 
         return list;
     }
-    
-    public String getDate(String date_s)
-    {
-        SimpleDateFormat dt = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy",Locale.US);
+
+    public String getDate(String date_s) {
+        SimpleDateFormat dt = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
         Date date = null;
         try {
             date = dt.parse(date_s);
@@ -441,8 +466,29 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
 
         // *** same for the format String below
         SimpleDateFormat dt1 = new SimpleDateFormat("yyyy-MM-dd");
-        String dates  = dt1.format(date);
+        String dates = dt1.format(date);
         return dates;
+    }
+    
+    public Date converStringtoDate(String date)
+    {
+        Date newDate = null;
+        try {
+            newDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+        } catch (ParseException ex) {
+            Logger.getLogger(MemoirFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return newDate;
+    }
+
+    public Date getTime(String time) {
+        java.util.Date newTime = null;
+        try {
+            newTime = new SimpleDateFormat("HH:mm:ss").parse(time);
+        } catch (ParseException ex) {
+            Logger.getLogger(MemoirFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return newTime;
     }
 
 }

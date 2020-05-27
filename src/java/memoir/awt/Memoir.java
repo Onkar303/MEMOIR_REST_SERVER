@@ -76,6 +76,20 @@ public class Memoir implements Serializable {
     public Memoir() {
     }
 
+    public Memoir(Integer memoirId, String movieName, Date movieReleaseDate, Date movieWatchTime, Date movieWatchDate,Rating movieRating ,String movieComment, Cinema cinemaId, Person personId) {
+        this.memoirId = memoirId;
+        this.movieName = movieName;
+        this.movieReleaseDate = movieReleaseDate;
+        this.movieWatchTime = movieWatchTime;
+        this.movieWatchDate = movieWatchDate;
+        this.movieComment = movieComment;
+        this.cinemaId = cinemaId;
+        this.personId = personId;
+        this.movieRating = movieRating;
+    }
+    
+    
+
     public Memoir(Integer memoirId) {
         this.memoirId = memoirId;
     }

@@ -160,27 +160,50 @@ public class PersonFacadeREST extends AbstractFacade<Person> {
 
     //signup api
     @POST
-    @Consumes("text/plain")
-    @Path("addNewUser/{name}/{surname}/{gender}/{DOB}/{address}/{postcode}/{state}/{username}/{password}")
+    @Consumes({MediaType.MULTIPART_FORM_DATA})
+    @Path("addNewUser/{name}/{surname}/{gender}/{postcode}/{address}/{state}/{DOB}/{username}/{password}")
     @Produces({"application/json"})
-    public Object addNewUser(@PathParam("name") String name, @PathParam("surname") String surname, @PathParam("gender") String gender, @PathParam("postcode") String postcode, @PathParam("address") String address, @PathParam("state") String state, @PathParam("DOB") String DOB, @PathParam("username") String username, @PathParam("password") String password) {
+    public Object addNewUser(@PathParam("name") String name, @PathParam("surname") String surname, @PathParam("gender") String gender, @PathParam("postcode") String postcode, @PathParam("address") String address, @PathParam("state") String state, @PathParam("DOB") String DOB,@PathParam("username")String username,@PathParam("password")String password) {
 
         DateFormat dateformat = new SimpleDateFormat("dd-MM-yyyy");
         Date currentdate = new Date();
 
-        TypedQuery<Credentials> credentialsquery = em.createQuery("select c from Credentials c", Credentials.class);
-        Credentials credentials = new Credentials(credentialsquery.getResultList().size() + 1, username, password, currentdate, null);
-
-        TypedQuery<Person> personquery = em.createQuery("select p from Person p", Person.class);
+        List<Credentials> credentiallist= em.createQuery("select c from Credentials c where c.username = '" + username+ "' AND c.password = '" + password +"'", Credentials.class).getResultList();
+     
+        List<Person> personlist = em.createQuery("select p from Person p", Person.class).getResultList();
         Person person = null;
         try {
-            person = new Person((personquery.getResultList().size() + 1), name, surname, gender, new SimpleDateFormat("dd-mm-yyyy").parse(DOB), address, credentials, null);
-
+            person = new Person();
+            person.setPersonId(personlist.size() + 1);
+            person.setName(name);
+            person.setSurname(surname);
+            person.setGender(gender);
+            person.setAddress(address + " " + state + " " + postcode);
+            person.setCredentialsId(credentiallist.get(0));
+            person.setDob(new SimpleDateFormat("yyyy-MM-dd").parse(DOB));
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return null;
+        
+        JsonObject object = null;
+        if(em.contains(person))
+        {
+              object = Json.createObjectBuilder()
+                    .add("isSuccessfull", false)
+                    .add("message", "user Person already registered")
+                    .build();
+        }
+        else
+        {
+              em.persist(person);
+              object = Json.createObjectBuilder()
+                    .add("isSuccessfull", true)
+                    .add("message", "person registration successfull")
+                    .build();
+        }
+      
+        return object;
     }
 
     @GET
@@ -203,10 +226,10 @@ public class PersonFacadeREST extends AbstractFacade<Person> {
             builder.add(object);
 
         }
-        
-       JsonObject object = Json.createObjectBuilder()
-                    .add("person",builder)
-               .build();
+
+        JsonObject object = Json.createObjectBuilder()
+                .add("person", builder)
+                .build();
         return object;
     }
 
