@@ -60,9 +60,15 @@ public class Memoir implements Serializable {
     @Column(name = "MOVIE_WATCH_DATE")
     @Temporal(TemporalType.DATE)
     private Date movieWatchDate;
+    @Size(max = 100)
+    @Column(name = "MOVIE_IMAGE")
+    private String movieImage;
     @Size(max = 500)
     @Column(name = "MOVIE_COMMENT")
     private String movieComment;
+    @Size(max = 500)
+    @Column(name = "MOVIE_GENERE")
+    private String movieGenere;
     @JoinColumn(name = "CINEMA_ID", referencedColumnName = "CINEMA_ID")
     @ManyToOne
     private Cinema cinemaId;
@@ -76,7 +82,7 @@ public class Memoir implements Serializable {
     public Memoir() {
     }
 
-    public Memoir(Integer memoirId, String movieName, Date movieReleaseDate, Date movieWatchTime, Date movieWatchDate,Rating movieRating ,String movieComment, Cinema cinemaId, Person personId) {
+    public Memoir(Integer memoirId, String movieName, Date movieReleaseDate, Date movieWatchTime, Date movieWatchDate,Rating movieRating ,String movieImage,String movieComment,String movieGenere, Cinema cinemaId, Person personId) {
         this.memoirId = memoirId;
         this.movieName = movieName;
         this.movieReleaseDate = movieReleaseDate;
@@ -86,6 +92,8 @@ public class Memoir implements Serializable {
         this.cinemaId = cinemaId;
         this.personId = personId;
         this.movieRating = movieRating;
+        this.movieImage = movieImage;
+        this.movieGenere = movieGenere;
     }
     
     
@@ -172,6 +180,26 @@ public class Memoir implements Serializable {
         hash += (memoirId != null ? memoirId.hashCode() : 0);
         return hash;
     }
+
+    public String getMovieImage() {
+        return movieImage;
+    }
+
+    public void setMovieImage(String movieImage) {
+        this.movieImage = movieImage;
+    }
+
+    public String getMovieGenere() {
+        return movieGenere;
+    }
+
+    public void setMovieGenere(String movieGenere) {
+        this.movieGenere = movieGenere;
+    }
+    
+    
+    
+    
 
     @Override
     public boolean equals(Object object) {

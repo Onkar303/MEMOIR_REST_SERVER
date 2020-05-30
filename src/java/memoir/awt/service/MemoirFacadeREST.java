@@ -41,6 +41,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import memoir.awt.Cinema;
 import memoir.awt.Memoir;
+import static memoir.awt.Memoir_.movieImage;
 import memoir.awt.Person;
 import memoir.awt.Rating;
 
@@ -370,7 +371,7 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
     @Path("getAllMoviesForApp/{personId}")
     @Produces({"application/json"})
     public Object getAllMoviesForApp(@PathParam("personId")Integer personId) {
-        List<Object[]> q = em.createQuery("select m.memoirId,m.movieName,m.movieReleaseDate,m.movieWatchDate,m.cinemaId.cinemaName,m.cinemaId.location,m.movieComment,m.movieRating.star from Memoir m where m.personId.personId = '" + personId + "'", Object[].class).getResultList();
+        List<Object[]> q = em.createQuery("select m.memoirId,m.movieName,m.movieReleaseDate,m.movieWatchDate,m.cinemaId.cinemaName,m.cinemaId.location,m.movieImage,m.movieComment,m.movieGenere,m.movieRating.star from Memoir m where m.personId.personId = '" + personId + "'", Object[].class).getResultList();
 
         JsonObjectBuilder mainObjectBuilder = Json.createObjectBuilder();
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
@@ -384,8 +385,10 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
                     .add("movieWatchDate", getDate(row[3].toString()))
                     .add("cinemaName", row[4].toString())
                     .add("cinemaLocation", row[5].toString())
-                    .add("movieComment", row[6].toString())
-                    .add("movieRating", row[7].toString())
+                    .add("movieImage",row[6].toString())
+                    .add("movieComment", row[7].toString())
+                    .add("movieGenere", row[8].toString())
+                    .add("movieRating", row[9].toString())
                     .build();
             arrayBuilder.add(object);
         }
@@ -395,9 +398,9 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
 
     @POST
     @Consumes({MediaType.MULTIPART_FORM_DATA})
-    @Path("addMemoir/{memoirId}/{movieName}/{movieReleaseDate}/{movieWatchTime}/{movieWatchDate}/{movieComment}/{movieRating}/{cinemaId}/{personId}")
+    @Path("addMemoir/{memoirId}/{movieName}/{movieReleaseDate}/{movieWatchTime}/{movieWatchDate}/{movieImage}/{movieComment}/{movieGenere}/{movieRating}/{cinemaId}/{personId}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Object addMemoir(@PathParam("memoirId") Integer memoirId, @PathParam("movieName") String movieName, @PathParam("movieReleaseDate") String movieReleaseDate, @PathParam("movieWatchTime") String movieWatchTime, @PathParam("movieWatchDate") String movieWatchDate, @PathParam("movieComment") String movieComment, @PathParam("movieRating") String movieRating, @PathParam("cinemaId") Integer cinemaId, @PathParam("personId") Integer personId) {
+    public Object addMemoir(@PathParam("memoirId") Integer memoirId, @PathParam("movieName") String movieName, @PathParam("movieReleaseDate") String movieReleaseDate, @PathParam("movieWatchTime") String movieWatchTime, @PathParam("movieWatchDate") String movieWatchDate,@PathParam("movieImage") String movieImage,@PathParam("movieComment") String movieComment,@PathParam("movieGenere")String movieGenere ,@PathParam("movieRating") String movieRating, @PathParam("cinemaId") Integer cinemaId, @PathParam("personId") Integer personId) {
 
         List<Rating> rating = em.createQuery("select r from Rating r where r.star = '" + movieRating + "'", Rating.class).getResultList();
 
@@ -405,7 +408,7 @@ public class MemoirFacadeREST extends AbstractFacade<Memoir> {
 
         List<Cinema> cinema = em.createQuery("select c from Cinema c where c.cinemaId = '" + cinemaId + "'", Cinema.class).getResultList();
 
-        Memoir memoir = new Memoir(memoirId, movieName, converStringtoDate(movieReleaseDate), converStringtoDate(movieWatchTime), converStringtoDate(movieWatchDate), rating.get(0), movieComment, cinema.get(0), person.get(0));
+        Memoir memoir = new Memoir(memoirId, movieName, converStringtoDate(movieReleaseDate), converStringtoDate(movieWatchTime), converStringtoDate(movieWatchDate), rating.get(0),movieImage,movieComment,movieGenere,cinema.get(0), person.get(0));
 
         JsonObject obj = null;
         if (em.contains(memoir)) {
